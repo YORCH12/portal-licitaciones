@@ -1,6 +1,10 @@
 # ADR 0002: Supabase para identidad, persistencia y documentos
 
 - **Estado:** Aceptado
+- **Decusión** PostgreSQL y Auth en Supabase; Storage privado para documentos;
+migraciones con la CLI de Supabase; FastAPI valida JWT vía JWKS.
+Consecuencias: RLS obligatorio; roles en app_metadata; escrituras sensibles
+solo desde backend; video en proveedor externo; sin Alembic.
 - **Fecha:** 2026-10-03
 
 ## Contexto
