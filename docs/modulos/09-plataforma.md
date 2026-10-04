@@ -2,7 +2,8 @@
 
 ## Estado
 
-Base técnica creada; endpoint `GET /health` implementado.
+Base técnica creada; endpoint `GET /health` implementado y Supabase CLI
+inicializada.
 
 ## Fase
 
@@ -18,8 +19,9 @@ Proveer convenciones e infraestructura compartidas para la web y la API.
 
 ## Alcance
 
-- Configuración por entorno, CORS, conexión asíncrona a PostgreSQL y migraciones
-  con Alembic.
+- Configuración por entorno, CORS y conexión asíncrona por pooler a Supabase
+  PostgreSQL.
+- Migraciones con Supabase CLI en `supabase/migrations`.
 - Contrato OpenAPI y herramientas de desarrollo.
 - El endpoint de salud comprueba que la API responde; no consulta PostgreSQL.
 
@@ -30,14 +32,19 @@ Proveer convenciones e infraestructura compartidas para la web y la API.
 
 ## Decisiones
 
-- PostgreSQL 16 es la base local de desarrollo.
-- SQLAlchemy 2 async usa asyncpg; Alembic comparte `Base.metadata`.
-- `API_CORS_ORIGINS` configura los orígenes permitidos.
+- Supabase CLI administra la base local y Supabase remoto es la plataforma de
+  persistencia.
+- `supabase/migrations` es la única fuente del esquema; no se usa Alembic.
+- SQLAlchemy 2 async usa asyncpg; `statement_cache_size=0` es necesario para el
+  pooler.
+- `CORS_ORIGINS` configura los orígenes permitidos.
+- RLS y políticas explícitas son obligatorias para cada tabla nueva.
 
 ## Checklist
 
 - [x] Crear la base de API y el endpoint de salud.
-- [x] Preparar PostgreSQL, configuración y migraciones.
+- [x] Inicializar Supabase local y crear la primera migración vacía.
+- [x] Preparar conexión pooler, configuración y autenticación JWKS.
 - [x] Exportar OpenAPI y generar tipos de cliente.
 - [ ] Definir necesidades operativas adicionales según avance el producto.
 

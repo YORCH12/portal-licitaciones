@@ -16,6 +16,7 @@ negocio.
 | Landing        | Base técnica creada; funcionalidad pendiente  | 3. Oferta y membresía         | [08-landing.md](./modulos/08-landing.md)               |
 | Plataforma     | Endpoint técnico `/health`; dominio pendiente | 1. Fundación técnica          | [09-plataforma.md](./modulos/09-plataforma.md)         |
 
-Decisiones transversales: [ADR 0001 — Stack](./adr/0001-stack.md). La primera
-entrada de trabajo está en el [historial](./historial.md). El contrato inicial
-de la API está en [OpenAPI](./contrato/openapi.json).
+Decisiones transversales: [ADR 0001 — Stack](./adr/0001-stack.md) y
+[ADR 0002 — Supabase](./adr/0002-supabase.md). Los avances están en el
+[historial](./historial.md). El contrato inicial de la API está en
+[OpenAPI](./contrato/openapi.json).

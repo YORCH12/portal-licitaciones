@@ -13,3 +13,14 @@
 - Se documentaron los nueve módulos, el stack y las reglas de contribución.
 - No se implementó lógica de negocio ni se eligieron proveedores de
   autenticación, pagos, video o IA.
+
+## 2026-10-03 — Adopción de Supabase
+
+- Se reemplazaron Docker Compose y Alembic por Supabase CLI y su directorio
+  `supabase/migrations`, con una migración inicial vacía.
+- Se añadió la configuración de Supabase Auth y validación de access tokens por
+  JWKS con caché y control de roles desde `app_metadata`.
+- Se agregaron clientes SSR de navegador y servidor y middleware de refresco de
+  sesión, sin pantallas de acceso.
+- Se documentaron RLS obligatorio, Storage para documentos y proveedor externo
+  de video pendiente.

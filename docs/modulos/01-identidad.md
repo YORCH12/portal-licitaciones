@@ -2,7 +2,8 @@
 
 ## Estado
 
-Base técnica creada; funcionalidad pendiente.
+Base de Supabase Auth y validación de tokens creada; pantallas y flujos de
+acceso pendientes.
 
 ## Fase
 
@@ -20,8 +21,10 @@ portal.
 ## Alcance
 
 - Pendiente de diseño funcional.
-- No incluye integración de autenticación en esta base.
-- No se ha elegido proveedor ni estrategia de sesiones o tokens.
+- Supabase Auth es el proveedor de identidad elegido.
+- No incluye pantallas de login, registro ni recuperación de cuenta.
+- La API valida tokens con JWKS; los permisos de aplicación se basan en
+  `app_metadata.role`.
 
 ## Entidades y endpoints
 
@@ -30,14 +33,15 @@ portal.
 
 ## Decisiones
 
-- PyJWT queda disponible únicamente para validar JWT cuando se apruebe el
-  contrato y la estrategia de emisión.
-- Los flujos de autenticación y autorización no forman parte del arranque.
+- Las políticas RLS de PostgreSQL son obligatorias y complementan la
+  autorización de la API.
 
 ## Checklist
 
 - [ ] Acordar actores, roles y permisos.
-- [ ] Elegir estrategia y proveedor de autenticación.
+- [x] Elegir Supabase Auth y validación de JWT con JWKS.
+- [x] Acordar roles de autorización en `app_metadata`.
+- [ ] Definir los flujos de login y gestión de cuenta.
 - [ ] Definir contratos, persistencia y pruebas.
 
 ## Registro de avances

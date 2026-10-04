@@ -21,7 +21,8 @@ Definir la gestión y entrega de materiales complementarios del portal.
 ## Alcance
 
 - Pendiente de tipos de archivo, metadatos, retención y permisos.
-- No incluye almacenamiento externo ni carga de archivos.
+- Supabase Storage es el servicio elegido para documentos.
+- Buckets, políticas, límites de carga y retención siguen pendientes.
 
 ## Entidades y endpoints
 
@@ -30,14 +31,15 @@ Definir la gestión y entrega de materiales complementarios del portal.
 
 ## Decisiones
 
-- El proveedor de almacenamiento se decidirá junto con los requisitos de
-  seguridad y operación.
+- El acceso a documentos debe alinearse con RLS y políticas de Storage de
+  Supabase.
 
 ## Checklist
 
 - [ ] Definir formatos y límites de recursos.
 - [ ] Acordar controles de acceso y retención.
-- [ ] Evaluar almacenamiento y diseñar contratos.
+- [x] Elegir Supabase Storage para documentos.
+- [ ] Definir buckets, políticas, límites y contratos.
 
 ## Registro de avances
 
