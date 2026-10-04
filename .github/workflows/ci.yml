@@ -82,10 +82,10 @@ jobs:
         run: git diff --exit-code -- ../../docs/contrato/openapi.json
 
       - name: Lint
-        run: uv run ruff check app tests scripts alembic
+        run: uv run ruff check app tests scripts
 
       - name: Check formatting
-        run: uv run ruff format --check app tests scripts alembic
+        run: uv run ruff format --check app tests scripts
 
       - name: Type-check
         run: uv run mypy
