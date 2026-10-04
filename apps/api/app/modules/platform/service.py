@@ -1,0 +1,1 @@
+"""Platform module service placeholder."""

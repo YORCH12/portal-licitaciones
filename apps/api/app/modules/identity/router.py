@@ -1,0 +1,1 @@
+"""Identity module router placeholder."""

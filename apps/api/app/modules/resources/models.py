@@ -1,0 +1,1 @@
+"""Resources module model placeholder."""

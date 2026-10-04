@@ -1,0 +1,1 @@
+"""Catalog module service placeholder."""

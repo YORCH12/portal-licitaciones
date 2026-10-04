@@ -1,0 +1,1 @@
+"""Landing module router placeholder."""

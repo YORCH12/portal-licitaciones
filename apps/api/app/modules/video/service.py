@@ -1,0 +1,1 @@
+"""Video module service placeholder."""
