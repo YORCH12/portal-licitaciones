@@ -18,8 +18,10 @@ una decisión explícita.
 - Migraciones: `supabase/migrations` es la única fuente del esquema; no se usa
   Alembic. Todas las tablas deben protegerse con RLS y políticas explícitas.
 - La API se conecta al pooler de Supabase con asyncpg y `statement_cache_size=0`.
-- Supabase Auth valida tokens contra JWKS; los roles de autorización de la app
-  se leen de `app_metadata`, no del claim Postgres `role`.
+- Supabase Auth valida tokens contra JWKS; `profiles.role` es la fuente única
+  de roles. El Custom Access Token Hook añade ese valor al claim JWT
+  `user_role`; no se usan `app_metadata.role` ni el claim Postgres `role` para
+  autorización.
 - Contrato: OpenAPI exportado desde FastAPI y tipos TypeScript generados con
   `openapi-typescript`; `openapi-fetch` es el cliente previsto.
 
@@ -27,7 +29,7 @@ una decisión explícita.
 
 1. **Fundación técnica:** monorepo, infraestructura, plataforma mínima y calidad.
 2. **Identidad y administración:** configurar Supabase Auth, roles en
-   `app_metadata` y operación administrativa; todavía no hay pantallas de login.
+   `profiles.role` y operación administrativa; todavía no hay pantallas de login.
 3. **Oferta y membresía:** catálogo, suscripciones y presencia pública; no
    integrar pagos hasta decidir proveedor y alcance.
 4. **Contenidos y recursos:** organizar video y recursos; Supabase Storage se

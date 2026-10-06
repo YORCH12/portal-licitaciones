@@ -17,9 +17,10 @@ incorporar ahora pantallas de acceso ni elegir un proveedor de video.
 
 - Usar **Supabase Auth** como proveedor de identidad. El portal aún no incluye
   pantallas de login ni flujos de autenticación.
-- Guardar los roles de aplicación en el claim `app_metadata.role`, administrado
-  desde servidor. No usar el claim Postgres `role` para decisiones de permisos
-  del portal.
+- Mantener `profiles.role` como fuente única de roles de aplicación. El Custom
+  Access Token Hook consulta el perfil y emite el claim JWT top-level
+  `user_role`. No usar `app_metadata.role` ni el claim Postgres `role` para
+  decisiones de permisos del portal.
 - Validar access tokens en la API contra `SUPABASE_JWKS_URL`, verificando firma,
   issuer, audience y expiración con PyJWT y claves JWKS cacheadas. La API solo
   acepta algoritmos asimétricos ES256 y RS256.
@@ -41,6 +42,7 @@ incorporar ahora pantallas de acceso ni elegir un proveedor de video.
 
 - La API confía en claves públicas publicadas por Supabase y distingue tokens
   inválidos (401), roles insuficientes (403) y fallas al obtener JWKS (503).
+  El claim `user_role` refleja `profiles.role` al emitirse/renovarse el token.
 - Toda creación de tablas debe venir acompañada de RLS, políticas y pruebas de
   autorización.
 - El archivo `.env.example` contiene solo marcadores de posición. El project ref,

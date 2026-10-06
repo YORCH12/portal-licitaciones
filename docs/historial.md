@@ -30,6 +30,13 @@
 - Variables de entorno reunidas; JWKS verificada.
 - Pendientes: crear proyecto prod, SMTP propio, proveedor de video.
 
+## 2026-10-06: Roles centralizados en profiles
+- Decisión: `profiles.role` es la fuente única; el Custom Access Token Hook
+  emite el claim JWT `user_role`.
+- Se trasladó `is_admin()` al esquema privado para su uso en políticas RLS.
+- Pendiente: habilitar el hook en el proyecto Supabase remoto y validar las
+  pruebas SQL en un entorno local con Docker.
+
 ## 2026-10-06: Auditoría técnica del portal
 - Contexto: revisión de solo lectura del monorepo y cambios locales pendientes.
 - Decisión o entregable: estado por fase y módulo, riesgos de seguridad, divergencias de contratos y decisiones de proveedores.

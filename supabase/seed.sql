@@ -14,4 +14,4 @@ on conflict (slug) do nothing;
 --
 -- Para promover a admin (solo con service_role / SQL editor):
 -- update public.profiles set role = 'admin' where email = 'tu@correo.com';
--- y en Auth > Users, añade {"role":"admin"} en app_metadata.
+-- El Custom Access Token Hook incluirá ese rol en el siguiente JWT emitido.

@@ -1,5 +1,6 @@
 import json
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import uuid4
 
 import jwt
@@ -33,19 +34,24 @@ def create_token(
     private_key: RSAPrivateKey,
     key_id: str,
     *,
-    role: str,
+    user_role: str | None,
     expires_in: timedelta,
+    app_metadata_role: str | None = None,
 ) -> str:
     now = datetime.now(UTC)
-    payload = {
+    payload: dict[str, Any] = {
         "iss": settings.supabase_jwt_issuer,
         "aud": "authenticated",
         "sub": "user-123",
         "role": "authenticated",
         "iat": now,
         "exp": now + expires_in,
-        "app_metadata": {"role": role},
     }
+    if user_role is not None:
+        payload["user_role"] = user_role
+    if app_metadata_role is not None:
+        payload["app_metadata"] = {"role": app_metadata_role}
+
     return jwt.encode(
         payload,
         private_key,
@@ -62,14 +68,14 @@ def authorize(token: str) -> CurrentUser:
     return get_current_user(credentials)
 
 
-def test_valid_supabase_token_exposes_user_id_and_app_role(
+def test_valid_supabase_token_exposes_user_id_and_profile_role_claim(
     signing_key: tuple[RSAPrivateKey, str],
 ) -> None:
     private_key, key_id = signing_key
     token = create_token(
         private_key,
         key_id,
-        role="admin",
+        user_role="admin",
         expires_in=timedelta(minutes=5),
     )
 
@@ -86,7 +92,7 @@ def test_expired_supabase_token_is_rejected(
     token = create_token(
         private_key,
         key_id,
-        role="admin",
+        user_role="admin",
         expires_in=timedelta(seconds=-1),
     )
 
@@ -96,19 +102,37 @@ def test_expired_supabase_token_is_rejected(
     assert exc_info.value.status_code == 401
 
 
-def test_incorrect_app_role_is_forbidden(
+def test_incorrect_profile_role_is_forbidden(
     signing_key: tuple[RSAPrivateKey, str],
 ) -> None:
     private_key, key_id = signing_key
     token = create_token(
         private_key,
         key_id,
-        role="subscriber",
+        user_role="subscriber",
         expires_in=timedelta(minutes=5),
     )
     user = authorize(token)
 
     with pytest.raises(HTTPException) as exc_info:
         require_role("admin")(current_user=user)
+
+    assert exc_info.value.status_code == 403
+
+
+def test_app_metadata_role_is_not_used_as_authority(
+    signing_key: tuple[RSAPrivateKey, str],
+) -> None:
+    private_key, key_id = signing_key
+    token = create_token(
+        private_key,
+        key_id,
+        user_role=None,
+        expires_in=timedelta(minutes=5),
+        app_metadata_role="admin",
+    )
+
+    with pytest.raises(HTTPException) as exc_info:
+        authorize(token)
 
     assert exc_info.value.status_code == 403

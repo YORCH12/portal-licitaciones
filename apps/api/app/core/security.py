@@ -47,8 +47,7 @@ def get_current_user(
         ) from exc
 
     subject = payload.get("sub")
-    app_metadata = payload.get("app_metadata")
-    role = app_metadata.get("role") if isinstance(app_metadata, dict) else None
+    role = payload.get("user_role")
 
     if not isinstance(subject, str) or not subject:
         raise HTTPException(
@@ -60,7 +59,7 @@ def get_current_user(
     if not isinstance(role, str) or not role:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="A role in app_metadata is required",
+            detail="A user_role claim is required",
         )
 
     return CurrentUser(id=subject, role=role)
