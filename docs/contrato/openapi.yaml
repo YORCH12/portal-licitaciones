@@ -1,0 +1,201 @@
+openapi: 3.1.0
+info:
+  title: Portal Licitaciones PM - API de servicios
+  version: 0.1.0
+  description: >
+    Contrato inicial (borrador Fase 1). Solo cubre lo que NO se resuelve con
+    Supabase+RLS desde Next.js. FastAPI debe implementarlo y exportar el
+    esquema real a este archivo.
+servers:
+  - url: http://localhost:8000
+security:
+  - bearerAuth: []
+tags:
+  - name: system
+  - name: subscriptions
+  - name: video
+  - name: resources
+  - name: analysis
+paths:
+  /health:
+    get:
+      tags: [system]
+      security: []
+      summary: Estado del servicio
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { type: object, properties: { status: { type: string, example: ok } }, required: [status] }
+  /subscriptions/checkout:
+    post:
+      tags: [subscriptions]
+      summary: Inicia el cobro de un plan y devuelve la URL de la pasarela
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CheckoutRequest" }
+      responses:
+        "200": { description: URL de pago, content: { application/json: { schema: { $ref: "#/components/schemas/CheckoutResponse" } } } }
+        "409": { $ref: "#/components/responses/Error" }
+  /subscriptions/cancel:
+    post:
+      tags: [subscriptions]
+      summary: Cancela la suscripción vigente del usuario
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { at_period_end: { type: boolean, default: true } } }
+      responses:
+        "200": { description: Suscripción actualizada, content: { application/json: { schema: { $ref: "#/components/schemas/SubscriptionState" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+  /webhooks/mercadopago:
+    post:
+      tags: [subscriptions]
+      security: []
+      summary: Webhook de Mercado Pago (verifica x-signature; idempotente)
+      parameters:
+        - { name: x-signature, in: header, required: true, schema: { type: string } }
+        - { name: x-request-id, in: header, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        "200": { description: Evento recibido }
+        "401": { $ref: "#/components/responses/Error" }
+  /lessons/{lesson_id}/playback:
+    post:
+      tags: [video]
+      summary: URL de reproducción firmada y con expiración
+      description: Requiere suscripción activa, salvo lecciones con is_free_preview.
+      parameters:
+        - { $ref: "#/components/parameters/LessonId" }
+      responses:
+        "200": { description: URL firmada, content: { application/json: { schema: { $ref: "#/components/schemas/PlaybackResponse" } } } }
+        "403": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+  /resources/{resource_id}/download-url:
+    post:
+      tags: [resources]
+      summary: URL firmada de descarga (expira en minutos)
+      parameters:
+        - { name: resource_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: URL firmada, content: { application/json: { schema: { $ref: "#/components/schemas/SignedUrlResponse" } } } }
+        "403": { $ref: "#/components/responses/Error" }
+  /admin/resources/upload-url:
+    post:
+      tags: [resources]
+      summary: (Admin) URL firmada para subir un recurso a Storage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UploadUrlRequest" }
+      responses:
+        "200": { description: URL de subida, content: { application/json: { schema: { $ref: "#/components/schemas/UploadUrlResponse" } } } }
+        "403": { $ref: "#/components/responses/Error" }
+  /analysis/jobs:
+    post:
+      tags: [analysis]
+      summary: Crea un trabajo de análisis IA (valida suscripción y cuota)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AnalysisJobCreate" }
+      responses:
+        "202": { description: Trabajo encolado, content: { application/json: { schema: { $ref: "#/components/schemas/AnalysisJob" } } } }
+        "402": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+  /analysis/jobs/{job_id}:
+    get:
+      tags: [analysis]
+      summary: Estado y resultado de un trabajo
+      parameters:
+        - { name: job_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200": { description: Trabajo, content: { application/json: { schema: { $ref: "#/components/schemas/AnalysisJobDetail" } } } }
+        "404": { $ref: "#/components/responses/Error" }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT, description: JWT de Supabase Auth }
+  parameters:
+    LessonId: { name: lesson_id, in: path, required: true, schema: { type: string, format: uuid } }
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties: { code: { type: string }, message: { type: string } }
+    CheckoutRequest:
+      type: object
+      required: [plan_id]
+      properties: { plan_id: { type: string, format: uuid } }
+    CheckoutResponse:
+      type: object
+      required: [checkout_url]
+      properties: { checkout_url: { type: string, format: uri } }
+    SubscriptionState:
+      type: object
+      required: [status, cancel_at_period_end]
+      properties:
+        status: { type: string, enum: [pending, active, past_due, paused, canceled, expired] }
+        current_period_end: { type: [string, "null"], format: date-time }
+        cancel_at_period_end: { type: boolean }
+    PlaybackResponse:
+      type: object
+      required: [url, expires_at]
+      properties: { url: { type: string, format: uri }, expires_at: { type: string, format: date-time } }
+    SignedUrlResponse:
+      type: object
+      required: [url, expires_at]
+      properties: { url: { type: string, format: uri }, expires_at: { type: string, format: date-time } }
+    UploadUrlRequest:
+      type: object
+      required: [filename, content_type]
+      properties:
+        filename: { type: string }
+        content_type: { type: string }
+        size_bytes: { type: integer, minimum: 0 }
+    UploadUrlResponse:
+      type: object
+      required: [upload_url, storage_path]
+      properties: { upload_url: { type: string, format: uri }, storage_path: { type: string } }
+    AnalysisJobCreate:
+      type: object
+      required: [type]
+      description: Indicar source_resource_id o source_path.
+      properties:
+        type: { type: string, enum: [summary, risk_analysis, agent] }
+        source_resource_id: { type: string, format: uuid }
+        source_path: { type: string, description: "Ruta en el bucket analysis-inputs" }
+        params: { type: object, additionalProperties: true }
+    AnalysisJob:
+      type: object
+      required: [id, type, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        type: { type: string, enum: [summary, risk_analysis, agent] }
+        status: { type: string, enum: [queued, running, succeeded, failed] }
+        created_at: { type: string, format: date-time }
+    AnalysisJobDetail:
+      allOf:
+        - { $ref: "#/components/schemas/AnalysisJob" }
+        - type: object
+          properties:
+            error: { type: [string, "null"] }
+            result:
+              type: [object, "null"]
+              properties:
+                summary: { type: [string, "null"] }
+                output: { type: object, additionalProperties: true }
