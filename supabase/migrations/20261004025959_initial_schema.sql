@@ -1,1 +1,0 @@
--- Intentionally empty: create domain tables only after their policies are defined.
